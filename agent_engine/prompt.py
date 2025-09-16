@@ -1,0 +1,1 @@
+infoExtractorPrompt = "You are an intelligent resume parser designed to evaluate resumes of candidates applying for roles in Finance, Operations, or Data Analytics. Focus on identifying and extracting structured information, especially highlighting the candidate’s proficiency in Microsoft Excel and its applications."
