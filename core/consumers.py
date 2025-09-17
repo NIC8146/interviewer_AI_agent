@@ -1,29 +1,8 @@
+from distutils.command import config
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from langchain_core.messages import HumanMessage
 from asgiref.sync import async_to_sync
 import json
-
-
-# class MyConsumer(WebsocketConsumer):
-
-
-#     def connect(self):
-#         self.room_name = "some_room"
-#         self.room_group_name = "some_group"
-#         async_to_sync(self.channel_layer.group_add)(
-#             self.room_group_name,
-#             self.channel_name
-#         )
-  
-#         self.accept()
-#         self.send(text_data="You are connected!")
-
-#     def receive(self, text_data=None, bytes_data=None):
-    
-#         self.send(text_data="Hello world!")
-
-#     def disconnect(self, close_code):
-#         pass
         
 from agent_engine.workflow.chatworkflow import chatbot, initial_state
 
@@ -37,13 +16,17 @@ class MyConsumer(AsyncWebsocketConsumer):
         )
         await self.accept()
         
-        pk = self.scope["url_route"]["kwargs"]["pk"]
-        config = {"configurable": {"thread_id": pk}}
+        user_id = self.scope["url_route"]["kwargs"]["pk"]
+        self.config = {"configurable": {"thread_id": user_id}}
 
-        aimessage = chatbot.invoke(initial_state, config=config)['process_explainations'][-1].content
+        aimessage = chatbot.invoke(initial_state, config=self.config)['process_explainations'][-1].content
+        chatbot.update_state(
+            self.config,
+            {"processexplained": True}
+        )
         ai_response = {
                 "AiMessage": aimessage,
-                "userID": 1234
+                "userID": user_id
             }
         await self.send(text_data=json.dumps(ai_response))
 
@@ -61,13 +44,11 @@ class MyConsumer(AsyncWebsocketConsumer):
         if "HumanMessage" in data:
             human_msg = data["HumanMessage"]
             user_id = data.get("userID")
-            # aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] })['messages'][-1].content
-
-
-            # # Respond back with an AiMessage
-            # ai_response = {
-            #     "AiMessage": aimessage,
-            #     "userID": user_id
-            # }
-            # await self.send(text_data=json.dumps(ai_response))
+            aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] }, config=self.config)['messages'][-1].content
+            # Respond back with an AiMessage
+            ai_response = {
+                "AiMessage": aimessage,
+                "userID": user_id
+            }
+            await self.send(text_data=json.dumps(ai_response))
         
