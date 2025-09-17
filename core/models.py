@@ -10,7 +10,7 @@ class Message(models.Model):
     sender = models.CharField(max_length=10, choices=SENDER_CHOICES)
     text = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)  # auto time
-    candidate = models.ForeignKey('User', on_delete=models.CASCADE, related_name='messages', null=True, blank=True, help_text="The candidate associated with this message")
+    candidate = models.ForeignKey('candidate', on_delete=models.CASCADE, related_name='messages', null=True, blank=True, help_text="The candidate associated with this message")
 
     class Meta:
         ordering = ['timestamp']  # messages show oldest → newest
@@ -20,8 +20,7 @@ class Message(models.Model):
 
 
 class CandidateInfo(models.Model):
-    id = models.BigAutoField(primary_key=True)  # Unique ID and primary key
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='candidate_info', null=True, blank=True, help_text="The user associated with this candidate")
+    user_id = models.OneToOneField('candidate', on_delete=models.CASCADE, related_name='candidate_info', null=True, blank=True, help_text="The user associated with this candidate")
     name = models.CharField(max_length=255, null=True, blank=True, help_text="Full name of the candidate")
     age = models.IntegerField(null=True, blank=True, help_text="Age of the candidate")
     email = models.EmailField(null=True, blank=True, help_text="Email of the candidate")
@@ -41,11 +40,8 @@ class CandidateInfo(models.Model):
         return self.name if self.name else "Unnamed Candidate"
 
 
-class User(models.Model):
-    user_id = models.BigAutoField(primary_key=True)  # Unique ID and primary key
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+class candidate(models.Model):
+    user_id = models.CharField(max_length=8, primary_key=True)  # Unique ID and primary key
 
     def __str__(self):
-        return self.username
+        return str(self.user_id)

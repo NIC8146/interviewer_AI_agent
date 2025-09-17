@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Message, CandidateInfo
+from .models import Message, CandidateInfo,candidate
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
@@ -8,7 +8,12 @@ class MessageAdmin(admin.ModelAdmin):
     search_fields = ('text', 'candidate__name')
 
 @admin.register(CandidateInfo)
-class CandidateInfoAdmin(admin.ModelAdmin):
+class CandidateInfoAdmin(admin.ModelAdmin): 
     list_display = ('name', 'age', 'email', 'skills', 'certifications')
     list_filter = ('age', 'domain_knowledge')
     search_fields = ('name', 'email', 'skills', 'certifications')
+
+@admin.register(candidate)
+class candidateAdmin(admin.ModelAdmin):
+    list_display = ('user_id',)
+    

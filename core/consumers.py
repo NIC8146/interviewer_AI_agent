@@ -35,11 +35,12 @@ class MyConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        
-
         await self.accept()
+        
+        pk = self.scope["url_route"]["kwargs"]["pk"]
+        config = {"configurable": {"thread_id": pk}}
 
-        aimessage = chatbot.invoke(initial_state)['process_explainations'][-1].content
+        aimessage = chatbot.invoke(initial_state, config=config)['process_explainations'][-1].content
         ai_response = {
                 "AiMessage": aimessage,
                 "userID": 1234

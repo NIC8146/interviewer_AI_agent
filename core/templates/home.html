@@ -133,10 +133,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatHistory = document.getElementById("chat-history");
     const chatForm = document.getElementById("chat-form");
     const chatInput = document.getElementById("chat-input");
-    const userID = "1234";  // You can make this dynamic later if needed
+
+    const pathParts = window.location.pathname.split("/").filter(Boolean);
+    const userID = pathParts[1];  // "qwertyui" (since pathParts[0] = "chat")
 
     // Connect WebSocket
-    const socket = new WebSocket("ws://127.0.0.1:8000/ws/test/");
+    const socket = new WebSocket(`ws://localhost:8000/ws/test/${userID}/`);
 
     // Receive AI messages
     socket.onmessage = (event) => {

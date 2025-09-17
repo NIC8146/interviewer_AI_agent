@@ -1,13 +1,18 @@
-from django.shortcuts import render, redirect
-from .models import Message, CandidateInfo
+from django.shortcuts import render, redirect, HttpResponse
+from .models import Message, CandidateInfo, candidate
 from django.conf import settings
 import threading
 import os
 from agent_engine.utilities.utility import infoextractor
 
-def home(request):
+def home(request, pk):
+
+    userid = candidate.objects.filter(user_id=pk)
+    if len(userid) == 0:
+        return HttpResponse("Invalid User ID")
+        
     return render(request, "home.html", {
-        "messages": []  # if you want to preload messages later
+        "messages": []
     })
 
 
