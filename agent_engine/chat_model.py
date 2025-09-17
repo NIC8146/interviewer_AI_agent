@@ -7,6 +7,10 @@ model = ChatOpenAI(
     model="gpt-4o-mini"
 )
 
+evaluatorModel = ChatOpenAI(
+    model="gpt-4o-mini"
+)
+
 ChantModel = ChatOpenAI(
     model="gpt-4o-mini"
 )

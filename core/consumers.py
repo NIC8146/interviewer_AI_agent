@@ -18,17 +18,15 @@ class MyConsumer(AsyncWebsocketConsumer):
         
         user_id = self.scope["url_route"]["kwargs"]["pk"]
         self.config = {"configurable": {"thread_id": user_id}}
+        
+        if not chatbot.get_state(self.config).values.get("started", False):
+            aimessage = chatbot.invoke(initial_state, config=self.config)['process_explainations'][-1].content
 
-        aimessage = chatbot.invoke(initial_state, config=self.config)['process_explainations'][-1].content
-        chatbot.update_state(
-            self.config,
-            {"processexplained": True}
-        )
-        ai_response = {
-                "AiMessage": aimessage,
-                "userID": user_id
-            }
-        await self.send(text_data=json.dumps(ai_response))
+            ai_response = {
+                    "AiMessage": aimessage,
+                    "userID": user_id
+                }
+            await self.send(text_data=json.dumps(ai_response))
 
 
     async def disconnect(self, close_code):
@@ -44,7 +42,11 @@ class MyConsumer(AsyncWebsocketConsumer):
         if "HumanMessage" in data:
             human_msg = data["HumanMessage"]
             user_id = data.get("userID")
-            aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] }, config=self.config)['messages'][-1].content
+            if chatbot.get_state(self.config).values["processexplained"]:
+                aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] }, config=self.config)['messages'][-1].content
+            else:
+                aimessage = chatbot.invoke({ 'process_explainations': [HumanMessage(content=human_msg)] }, config=self.config)['process_explainations'][-1].content
+                
             # Respond back with an AiMessage
             ai_response = {
                 "AiMessage": aimessage,
