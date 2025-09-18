@@ -7,13 +7,15 @@ from agent_engine.utilities.utility import infoextractor
 from django.http import JsonResponse
 
 def home(request, pk):
-
     userid = candidate.objects.filter(user_id=pk)
     if len(userid) == 0:
         return HttpResponse("Invalid User ID")
-        
+
+    # Fetch all previous messages for the user
+    messages = Message.objects.filter(candidate=userid[0]).order_by('timestamp')
+
     return render(request, "home.html", {
-        "messages": []
+        "messages": messages
     })
 
 

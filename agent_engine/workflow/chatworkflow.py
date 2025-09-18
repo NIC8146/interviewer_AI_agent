@@ -42,14 +42,12 @@ def explainer_node(state: ChatState):
         processexplained: bool  = Field(description="Whether the process has been explained and user agrees to proceed")
         message: str = Field(description="The response message from the AI")
 
-    print("explainer node")
     # take user query from state
     messages = state['process_explainations']
 
     structured_model = chatModel.with_structured_output(ProcessExplainedState)
     # send to llm
     response = structured_model.invoke(messages)
-    print(f"{[response.processexplained]}")
 
     response_message = response.message
     if response.processexplained:
@@ -78,8 +76,7 @@ def evaluatorForExplainer(state: ChatState):
 
     class EvaluatorState(TypedDict):
         evaluatorProgress : Literal["ProceedNext", "Continue", "Messing Around"]
-    # print(f"human message {humanmessage}")
-    # state.update({'messages': [humanmessage]})
+
     structuredModel = evaluatorModel.with_structured_output(EvaluatorState)
 
     evaluator_state = structuredModel.invoke(state["process_explainations"] + [SystemMessage(content=evaluatorForExplainerPrompt)])
