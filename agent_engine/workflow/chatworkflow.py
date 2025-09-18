@@ -84,7 +84,9 @@ def behaviour_evaluation_node(state: ChatState):
 
     description = response.evaluationDescription
 
-    return {'behaviourEvaluation': [AIMessage(content=description)], 'evaluatorProgress': response.evaluatorProgress}
+    print(f"Evaluator Decision: {response.BehaviourEvaluator}, Description: {description}")
+
+    return {'behaviourEvaluation': [AIMessage(content=description)], 'evaluatorProgress': response.BehaviourEvaluator}
 
 def reportGeneratorNode(state: ChatState):
     print("report generator node")
@@ -128,7 +130,6 @@ graph.add_conditional_edges('explainer_node', evaluatorForExplainer)
 graph.add_edge('chat_node', "behaviour_evaluation_node")
 graph.add_conditional_edges('behaviour_evaluation_node', conditionalEdgeForBehaviourEvaluator)
 graph.add_edge('reportGeneratorNode', END)
-# graph.add_edge('behaviour_evaluation_node', END)
 
 
 chatbot = graph.compile(checkpointer=checkpointer)

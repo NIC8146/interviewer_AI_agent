@@ -4,7 +4,7 @@ from langchain_core.messages import HumanMessage
 from asgiref.sync import async_to_sync, sync_to_async
 import json
 from core.models import Message, candidate, CandidateInfo
-        
+from langgraph.types import Command
 from agent_engine.workflow.chatworkflow import chatbot, initial_state
 
 class MyConsumer(AsyncWebsocketConsumer):
@@ -51,18 +51,24 @@ class MyConsumer(AsyncWebsocketConsumer):
                 sender='user', text=human_msg, candidate=candidate_instance
             )
             if chatbot.get_state(self.config).values["processexplained"]:
-                aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] }, config=self.config)['messages'][-1].content     
+                # aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] }, config=self.config)
+                aimessage = chatbot.invoke(Command(resume=human_msg), config=self.config)
             else:
-                aimessage = chatbot.invoke({ 'process_explainations': [HumanMessage(content=human_msg)] }, config=self.config)['process_explainations'][-1].content
-               
+                # aimessage = chatbot.invoke({ 'process_explainations': [HumanMessage(content=human_msg)] }, config=self.config)
+                aimessage = chatbot.invoke(Command(resume=human_msg), config=self.config)
+
+            if chatbot.get_state(self.config).values["processexplained"]:
+                message = aimessage['messages'][-1].content
+            else:
+                message = aimessage['process_explainations'][-1].content
             # Respond back with an AiMessage
             ai_response = {
-                "AiMessage": aimessage,
+                "AiMessage": message,
                 "userID": user_id
             }
             
             candidate_instance = await sync_to_async(candidate.objects.get)(user_id=user_id)
             await sync_to_async(Message.objects.create)(
-                sender='bot', text=aimessage, candidate=candidate_instance
+                sender='bot', text=message, candidate=candidate_instance
             )
             await self.send(text_data=json.dumps(ai_response))
