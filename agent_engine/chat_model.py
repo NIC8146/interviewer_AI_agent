@@ -11,6 +11,6 @@ evaluatorModel = ChatOpenAI(
     model="gpt-4o-mini"
 )
 
-ChantModel = ChatOpenAI(
+chatModel = ChatOpenAI(
     model="gpt-4o-mini"
 )

@@ -3,3 +3,5 @@ env
 db.sqlite3
 migrations
 .env
+db.sqlite3-wal
+db.sqlite3-shm
