@@ -16,7 +16,6 @@ class MyConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
-        
         user_id = self.scope["url_route"]["kwargs"]["pk"]
         self.config = {"configurable": {"thread_id": user_id}}
         started = chatbot.get_state(self.config).values.get("started", False)
@@ -52,10 +51,10 @@ class MyConsumer(AsyncWebsocketConsumer):
                 sender='user', text=human_msg, candidate=candidate_instance
             )
             if chatbot.get_state(self.config).values["processexplained"]:
-                aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] }, config=self.config)['messages'][-1].content
+                aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] }, config=self.config)['messages'][-1].content     
             else:
                 aimessage = chatbot.invoke({ 'process_explainations': [HumanMessage(content=human_msg)] }, config=self.config)['process_explainations'][-1].content
-    
+               
             # Respond back with an AiMessage
             ai_response = {
                 "AiMessage": aimessage,
