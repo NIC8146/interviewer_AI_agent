@@ -4,6 +4,7 @@ from django.conf import settings
 import threading
 import os
 from agent_engine.utilities.utility import infoextractor
+from django.http import JsonResponse
 
 def home(request, pk):
 
@@ -17,11 +18,12 @@ def home(request, pk):
 
 
 # 
-def resumeInfoToDB(upload_path):
+def resumeInfoToDB(upload_path, userid):
     extracted_data = infoextractor(upload_path)
 
     # Save extracted data to the database
     candidate = CandidateInfo.objects.create(
+        user_id=userid,
         name=extracted_data.name,
         age=extracted_data.age,
         email=extracted_data.email,
@@ -38,15 +40,15 @@ def resumeInfoToDB(upload_path):
         miscellaneous=extracted_data.miscellaneous
     )
 
-def file_upload_view(request):
-    message = ""
+
+def upload_file_view(request, pk):
     if request.method == "POST" and request.FILES.get('file'):
+        userid = candidate.objects.filter(user_id=pk)
         upload = request.FILES['file']
 
         # Clear existing files in MEDIA_ROOT
         for filename in os.listdir(settings.MEDIA_ROOT):
             file_path = os.path.join(settings.MEDIA_ROOT, filename)
-            
             if os.path.isfile(file_path):
                 os.remove(file_path)
 
@@ -58,9 +60,9 @@ def file_upload_view(request):
             for chunk in upload.chunks():
                 destination.write(chunk)
 
-        threading.Thread(target=resumeInfoToDB, args=(upload_path,)).start()
-        
+        # Use the user ID from the URL parameter
+        threading.Thread(target=resumeInfoToDB, args=(upload_path, userid[0])).start()
 
-        message = f"File '{upload.name}' uploaded successfully."
+        return JsonResponse({"message": f"File '{upload.name}' uploaded successfully for user {pk}."})
 
-    return render(request, 'upload.html', {'message': message})
+    return JsonResponse({"message": "Invalid request."}, status=400)

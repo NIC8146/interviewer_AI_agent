@@ -16,6 +16,18 @@
         {% endfor %}
     </div>
 
+    <!-- File Upload Form -->
+    <form id="file-upload-form" class="file-upload-form" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input 
+            type="file" 
+            id="file-upload" 
+            name="file" 
+            class="file-input"
+            required>
+        <button type="submit" class="upload-btn">Upload</button>
+    </form>
+
     <!-- Input Form -->
     <form id="chat-form" class="input-form">
         {% csrf_token %}
@@ -126,6 +138,43 @@
 .send-btn:hover {
     background: #2563eb;
 }
+
+/* File Upload Form */
+.file-upload-form {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.file-input {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.file-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.4);
+}
+
+.upload-btn {
+    background: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.upload-btn:hover {
+    background: #2563eb;
+}
 </style>
 
 <script>
@@ -184,6 +233,40 @@ document.addEventListener("DOMContentLoaded", () => {
         chatHistory.appendChild(wrapper);
         chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
     }
+
+    // File upload handling
+    const fileUploadForm = document.getElementById("file-upload-form");
+    const fileInput = document.getElementById("file-upload");
+    const uploadButton = document.querySelector(".upload-btn");
+
+    fileUploadForm.addEventListener("submit", (e) => {
+        e.preventDefault(); // Prevent page reload
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        uploadButton.disabled = true; // Disable button to prevent multiple submissions
+        uploadButton.textContent = "Uploading...";
+
+        const userId = window.location.pathname.split("/")[2]; // Extract user ID from URL
+
+        fetch(`/upload_file/${userId}`, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": document.querySelector("input[name=csrfmiddlewaretoken]").value
+            }
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while uploading the file.");
+        })
+        .finally(() => {
+            uploadButton.disabled = false;
+            uploadButton.textContent = "Upload";
+        });
+    });
 });
 </script>
 {% endblock %}
