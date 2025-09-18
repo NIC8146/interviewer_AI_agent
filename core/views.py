@@ -42,8 +42,13 @@ def resumeInfoToDB(upload_path, userid):
 
 
 def upload_file_view(request, pk):
+    userid = candidate.objects.filter(user_id=pk)
+
+    # Check if a resume already exists for the given user ID
+    if CandidateInfo.objects.filter(user_id=userid[0]).exists():
+        return JsonResponse({"message": "resume already exists"}, status=403)
+
     if request.method == "POST" and request.FILES.get('file'):
-        userid = candidate.objects.filter(user_id=pk)
         upload = request.FILES['file']
 
         # Clear existing files in MEDIA_ROOT
@@ -66,3 +71,12 @@ def upload_file_view(request, pk):
         return JsonResponse({"message": f"File '{upload.name}' uploaded successfully for user {pk}."})
 
     return JsonResponse({"message": "Invalid request."}, status=400)
+
+def check_resume_status(request, pk):
+    userid = candidate.objects.filter(user_id=pk)
+
+    # Check if a resume already exists for the given user ID
+    if CandidateInfo.objects.filter(user_id=userid[0]).exists():
+        return JsonResponse({"resume_exists": True})
+
+    return JsonResponse({"resume_exists": False})

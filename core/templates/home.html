@@ -257,7 +257,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 "X-CSRFToken": document.querySelector("input[name=csrfmiddlewaretoken]").value
             }
         })
-        .then(response => response.json())
+        .then(response => response.json()).then(data => {
+            fileUploadForm.style.display = "none";
+        })
         .catch(error => {
             console.error("Error:", error);
             alert("An error occurred while uploading the file.");
@@ -266,6 +268,20 @@ document.addEventListener("DOMContentLoaded", () => {
             uploadButton.disabled = false;
             uploadButton.textContent = "Upload";
         });
+    });
+
+    // Check if resume already exists for the user
+    fetch(`/check_resume/${userID}`, {
+        method: "GET",
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.resume_exists) {
+            fileUploadForm.style.display = "none";
+        }
+    })
+    .catch(error => {
+        console.error("Error checking resume status:", error);
     });
 });
 </script>
