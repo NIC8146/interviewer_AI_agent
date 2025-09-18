@@ -24,13 +24,14 @@ class ChatState(TypedDict):
     behaviourEvaluation: Annotated[list[BaseMessage], add_messages]
     BehaviourEvaluator: Literal["Continue", "endSuccessfully", "interrupt"]
     ReportGenerated: bool
+    resumeUploaded : bool
+    interviewEnded : bool
 
 def pseudo_start(state: ChatState):
-    print("in pseudo start")
     return {'started': True}
 
 def chat_node(state: ChatState):
-    print("chat node")
+
     # take user query from state
     messages = state['messages']
 
@@ -42,7 +43,6 @@ def chat_node(state: ChatState):
 
 def explainer_node(state: ChatState):
 
-    print("explainer node")
 
     class ProcessExplainedState(BaseModel):
         processexplained: bool  = Field(description="Whether the process has been explained and user agrees to proceed")
@@ -64,7 +64,7 @@ def explainer_node(state: ChatState):
         return {'started': True, 'process_explainations': [response_message]}
 
 def behaviour_evaluation_node(state: ChatState):
-    print("behaviour evaluation node")
+
     user_response = interrupt("useranswer")
 
     class EvaluatorState(BaseModel):
@@ -84,12 +84,10 @@ def behaviour_evaluation_node(state: ChatState):
 
     description = response.evaluationDescription
 
-    print(f"Evaluator Decision: {response.BehaviourEvaluator}, Description: {description}")
-
     return {'behaviourEvaluation': [AIMessage(content=description)], 'evaluatorProgress': response.BehaviourEvaluator}
 
 def reportGeneratorNode(state: ChatState):
-    print("report generator node")
+
     return {'ReportGenerated': True}
 
 def conditionalEdgeforStart(state: ChatState) -> Literal["chat_node", "explainer_node"]:
@@ -135,9 +133,10 @@ graph.add_edge('reportGeneratorNode', END)
 chatbot = graph.compile(checkpointer=checkpointer)
 
 initial_state = {
-    'messages': [SystemMessage(content=chatSystemPrompt)],
+    'messages': [],
     'process_explainations': [SystemMessage(content=introSystemPrompt)],
     'processexplained': False,
     'started': False,
-    'resume_uploaded' : False
+    'resumeUploaded' : False,
+    'interviewEnded' : False
 }

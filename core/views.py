@@ -5,6 +5,9 @@ import threading
 import os
 from agent_engine.utilities.utility import infoextractor
 from django.http import JsonResponse
+from agent_engine.workflow.chatworkflow import chatbot
+from agent_engine.workflow.chatworkflow import SystemMessage
+from agent_engine.prompt import chatSystemPrompt
 
 def home(request, pk):
     userid = candidate.objects.filter(user_id=pk)
@@ -41,6 +44,16 @@ def resumeInfoToDB(upload_path, userid):
         internships=extracted_data.internships,
         miscellaneous=extracted_data.miscellaneous
     )
+    config = {"configurable": {"thread_id": str(userid)}}
+
+    candidate_info = CandidateInfo.objects.filter(user_id=userid).first()
+
+    candidate_info_dict = {field.name: getattr(candidate_info, field.name) for field in candidate_info._meta.fields}
+
+    chatSystemPrompt_filled = chatSystemPrompt.invoke({"resume" :str(candidate_info_dict)}).text
+    new_state = {"resumeUploaded": True, "process_explainations": [SystemMessage(content="system is saying Resume uploaded successfully")], "messages": [SystemMessage(content=chatSystemPrompt_filled)]}  # Set a new value
+
+    chatbot.update_state(config=config, values=new_state, as_node=None)
 
 
 def upload_file_view(request, pk):

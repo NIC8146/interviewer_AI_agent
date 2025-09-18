@@ -6,6 +6,8 @@ import json
 from core.models import Message, candidate, CandidateInfo
 from langgraph.types import Command
 from agent_engine.workflow.chatworkflow import chatbot, initial_state
+from agent_engine.prompt import chatSystemPrompt
+from langchain_core.messages import SystemMessage
 
 class MyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -23,9 +25,9 @@ class MyConsumer(AsyncWebsocketConsumer):
         if not started:
             aimessage = chatbot.invoke(initial_state, config=self.config)['process_explainations'][-1].content
             ai_response = {
-                    "AiMessage": aimessage,
-                    "userID": user_id
-                }
+                "AiMessage": aimessage,
+                "userID": user_id
+            }
             candidate_instance = await sync_to_async(candidate.objects.get)(user_id=user_id)
             await sync_to_async(Message.objects.create)(
                 sender='bot', text=aimessage, candidate=candidate_instance
