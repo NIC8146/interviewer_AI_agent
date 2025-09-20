@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const userID = pathParts[1];  // "qwertyui" (since pathParts[0] = "chat")
 
     // Connect WebSocket
-    const socket = new WebSocket(`ws://localhost:8000/ws/test/${userID}/`);
+    const socket = new WebSocket(`ws://localhost/ws/test/${userID}/`);
 
     // Receive AI messages
     socket.onmessage = (event) => {
