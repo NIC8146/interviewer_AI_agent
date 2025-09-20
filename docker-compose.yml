@@ -2,8 +2,6 @@ services:
   redis:
     image: redis:8.2
     container_name: redis
-    ports:
-      - "6379:6379"
     command: ["redis-server", "--appendonly", "yes","--bind", "0.0.0.0","--protected-mode", "no"]
     restart: always
 
@@ -14,7 +12,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8000:8000"
+      - "80:8000"
     depends_on:
       - redis
     volumes:
