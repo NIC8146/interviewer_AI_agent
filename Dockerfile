@@ -19,7 +19,6 @@ EXPOSE 8000
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV OPENAI_API_KEY=""
 
 # Run the application
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
