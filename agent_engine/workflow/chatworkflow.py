@@ -10,6 +10,7 @@ import sqlite3
 from interviewer_agent import settings
 import os
 from pydantic import BaseModel, Field
+import queue
 
 
 
@@ -130,7 +131,29 @@ graph.add_conditional_edges('behaviour_evaluation_node', conditionalEdgeForBehav
 graph.add_edge('reportGeneratorNode', END)
 
 
-chatbot = graph.compile(checkpointer=checkpointer)
+
+class chat_bot:
+
+    def __init__(self):
+        self.bot =  graph.compile(checkpointer=checkpointer)
+        self.update_queue = queue.Queue()
+
+    def get_state(self, *args, **kwargs):
+        return self.bot.get_state(*args, **kwargs)
+    
+    def invoke(self, *args, **kwargs):
+        while not self.update_queue.empty():
+            queue_element = self.update_queue.get(timeout=1)
+            self.update_queue.task_done()
+            self.bot.update_state(**queue_element)
+        return self.bot.invoke(*args, **kwargs)
+        
+
+    def update_state(self, *args, **kwargs):
+        self.update_queue.put(kwargs)
+
+
+chatbot = chat_bot()
 
 initial_state = {
     'messages': [],

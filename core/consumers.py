@@ -1,4 +1,3 @@
-from distutils.command import config
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from langchain_core.messages import HumanMessage
 from asgiref.sync import async_to_sync, sync_to_async
@@ -52,12 +51,8 @@ class MyConsumer(AsyncWebsocketConsumer):
             await sync_to_async(Message.objects.create)(
                 sender='user', text=human_msg, candidate=candidate_instance
             )
-            if chatbot.get_state(self.config).values["processexplained"]:
-                # aimessage = chatbot.invoke({ 'messages': [HumanMessage(content=human_msg)] }, config=self.config)
-                aimessage = chatbot.invoke(Command(resume=human_msg), config=self.config)
-            else:
-                # aimessage = chatbot.invoke({ 'process_explainations': [HumanMessage(content=human_msg)] }, config=self.config)
-                aimessage = chatbot.invoke(Command(resume=human_msg), config=self.config)
+
+            aimessage = chatbot.invoke(Command(resume=human_msg), config=self.config)
 
             if chatbot.get_state(self.config).values["processexplained"]:
                 message = aimessage['messages'][-1].content
