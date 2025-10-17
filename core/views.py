@@ -21,6 +21,9 @@ def home(request, pk):
         "messages": messages
     })
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+import json
 
 # 
 def resumeInfoToDB(upload_path, userid):
@@ -54,6 +57,20 @@ def resumeInfoToDB(upload_path, userid):
     new_state = {"resumeUploaded": True, "process_explainations": [SystemMessage(content="system is saying Resume uploaded successfully")], "messages": [SystemMessage(content=chatSystemPrompt_filled)]}  # Set a new value
 
     chatbot.update_state(config=config, values=new_state, as_node=None)
+    ai_response = {
+                "AiMessage": "uploaded",
+                "userID": str(userid)
+            }
+    
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"group-{str(userid)}",  # same group name as in consumer
+        {
+            "type": "chat_message",
+            "id":str(userid),
+        }
+    )
+
 
 
 def upload_file_view(request, pk):

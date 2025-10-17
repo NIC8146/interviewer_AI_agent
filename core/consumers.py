@@ -10,14 +10,14 @@ from langchain_core.messages import SystemMessage
 
 class MyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        user_id = self.scope["url_route"]["kwargs"]["pk"]
         self.room_name = "some_room"
-        self.room_group_name = "some_group"
+        self.room_group_name = f"group-{user_id}"
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
         await self.accept()
-        user_id = self.scope["url_route"]["kwargs"]["pk"]
         self.config = {"configurable": {"thread_id": user_id}}
         started = chatbot.get_state(self.config).values.get("started", False)
 
@@ -69,3 +69,23 @@ class MyConsumer(AsyncWebsocketConsumer):
                 sender='bot', text=message, candidate=candidate_instance
             )
             await self.send(text_data=json.dumps(ai_response))
+
+    
+    # Receive message from group
+    async def chat_message(self, event):
+        user_id = event["id"]
+        aimessage = chatbot.invoke(Command(resume="resume uploaded"), config=self.config)
+        if chatbot.get_state(self.config).values["processexplained"]:
+            message = aimessage['messages'][-1].content
+        else:
+            message = aimessage['process_explainations'][-1].content
+        ai_response = {
+            "AiMessage": message,
+            "userID": user_id
+        }
+        candidate_instance = await sync_to_async(candidate.objects.get)(user_id=user_id)
+        await sync_to_async(Message.objects.create)(
+                sender='bot', text=message, candidate=candidate_instance
+            )
+
+        await self.send(text_data=json.dumps(ai_response))
